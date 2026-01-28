@@ -39,21 +39,19 @@ const Login = () => {
       return;
     }
 
-    const result = await login(email, password);
+   const result = await login(email, password);
 
-    if (result.success) {
-      // Redirect based on user role
-      const roleRedirects = {
-        STUDENT: '/student',
-        COORDINATOR: '/coordinator',
-        HOD: '/hod'
-      };
-      navigate(roleRedirects[result.user.role] || '/login', { replace: true });
-    } else {
-      setError(result.message || 'Login failed. Please try again.');
-      setLoading(false);
-    }
+if (result && result.success) {
+  const roleRedirects = {
+    STUDENT: '/student',
+    COORDINATOR: '/coordinator',
+    HOD: '/hod'
   };
+  navigate(roleRedirects[result.user.role] || '/login', { replace: true });
+} else {
+  setError(result?.message || 'Invalid email or password');
+  setLoading(false);
+}
 
   // Quick login helpers for demo (remove in production)
   const quickLogin = (role) => {
