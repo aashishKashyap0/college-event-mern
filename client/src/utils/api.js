@@ -1,27 +1,24 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = '/api';
-
-// Create axios instance with default config
+// Axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
 });
 
 // Add token to requests if it exists
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Handle response errors
@@ -29,71 +26,45 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear storage and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
 );
 
-// API functions
+// ===== API MODULES =====
+
 export const eventAPI = {
-  // Get all events
-  getEvents: (params = {}) => api.get('/events', { params }),
-  
-  // Get single event
+  getEvents: (params = {}) => api.get("/events", { params }),
   getEvent: (id) => api.get(`/events/${id}`),
-  
-  // Create event (Coordinator)
-  createEvent: (data) => api.post('/events', data),
-  
-  // Register for event (Student)
+  createEvent: (data) => api.post("/events", data),
   registerForEvent: (id) => api.post(`/events/${id}/register`),
-  
-  // Get student's registrations
-  getMyRegistrations: () => api.get('/events/registrations/me'),
-  
-  // Get event registrations (Coordinator)
+  getMyRegistrations: () => api.get("/events/registrations/me"),
   getEventRegistrations: (id) => api.get(`/events/${id}/registrations`),
-  
-  // Export registrations as CSV
-  exportRegistrations: (id) => api.get(`/events/${id}/registrations/export`, { responseType: 'blob' }),
-  
-  // Check-in to event
+  exportRegistrations: (id) =>
+    api.get(`/events/${id}/registrations/export`, { responseType: "blob" }),
   checkIn: (id) => api.post(`/events/${id}/checkin`),
-  
-  // Submit feedback
   submitFeedback: (id, data) => api.post(`/events/${id}/feedback`, data),
-  
-  // Get event feedback (Coordinator)
-  getEventFeedback: (id) => api.get(`/events/${id}/feedback`)
+  getEventFeedback: (id) => api.get(`/events/${id}/feedback`),
 };
 
 export const audiAPI = {
-  // Get all auditoriums
-  getAuditoriums: () => api.get('/audi'),
-  
-  // Check availability
-  checkAvailability: (params) => api.get('/audi/availability', { params }),
-  
-  // Book auditorium
-  bookAuditorium: (data) => api.post('/audi/book', data),
-  
-  // Get my booking requests
-  getMyRequests: () => api.get('/audi/my-requests')
+  getAuditoriums: () => api.get("/audi"),
+  checkAvailability: (params) =>
+    api.get("/audi/availability", { params }),
+  bookAuditorium: (data) => api.post("/audi/book", data),
+  getMyRequests: () => api.get("/audi/my-requests"),
 };
 
 export const hodAPI = {
-  // Get pending bookings
-  getPendingBookings: () => api.get('/hod/bookings/pending'),
-  
-  // Get all bookings
-  getAllBookings: (params = {}) => api.get('/hod/bookings', { params }),
-  
-  // Update booking status
-  updateBookingStatus: (id, status) => api.patch(`/hod/bookings/${id}`, { status })
+  getPendingBookings: () => api.get("/hod/bookings/pending"),
+  getAllBookings: (params = {}) =>
+    api.get("/hod/bookings", { params }),
+  updateBookingStatus: (id, status) =>
+    api.patch(`/hod/bookings/${id}`, { status }),
 };
 
+// ✅ ONLY ONE default export
 export default api;
